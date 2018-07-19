@@ -29,6 +29,7 @@ classdef NFA < file
 	methods
 	%% constructor
 		function self = NFA()
+            self.ext = '.NFA';
 		end
 
 	%% dependent methods

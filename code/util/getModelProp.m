@@ -52,6 +52,15 @@ for ii = 1:length(model)
             prop = fillempty(prop, sxn);
         end
     end
+    
+    % Operate on St7 spring-damper elements
+    % check for sections structure
+    if isa(prop,'spring_damper')
+        % get spring damper data
+        vals = prop.getSDData(uID);
+        % populate empty spring property data
+        prop = fillempty(prop, vals);
+    end
 
     % Operate on nodes
     if isa(prop,'node')

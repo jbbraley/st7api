@@ -8,9 +8,9 @@ function sensitivity(uID,model)
 % create date: 15-Nov-2016 16:02:49
 
 if ~isfield(model, 'options') || ~isfield(model.options,'populate'); 
-    populate = 1; end
+    populate = 1; else; populate = model.options.populate; end
 
-    if model.options.populate
+    if populate
         getModelProp(uID,model.params);
     end
 

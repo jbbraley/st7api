@@ -45,6 +45,13 @@ for ii = 1:length(model)
             prop.setBeamSection(uID)
         end
     end
+    
+    % Operate on St7 spring-damper elements
+    if isa(prop,'spring_damper')
+        % set spring damper data
+        prop.setSDData(uID)
+    end
+
 
     % Operate on nodes
     if isa(prop,'node')

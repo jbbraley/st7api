@@ -101,6 +101,20 @@ function results = main(uID,model)
         results.comp = connection;
     end
 
+%% Spring-Damper
+    % check for spring structure
+    if isfield(model,'spring')
+        spring = model.spring;
+        % get spring damper data
+        spring_dat = spring.getSDData(uID);
+        % populate empty spring property data
+        spring = fillempty(spring, spring_dat);
+        % set new spring properties
+        spring.setSDData();
+        % save data to results structure
+        results.spring = spring;
+    end
+
 %% Plate
     % check for deck structure (assumes material is to altered)
     if isfield(model,'deck')
