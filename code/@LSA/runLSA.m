@@ -18,7 +18,7 @@ function runLSA(self,uID)
 % jdv 7/9/14; 1/11/15; 08232016
 
     % globals
-    global stLinearStaticSolver smProgressRun btTrue rtNodeDisp   
+    global stLinearStaticSolver smProgressRun btTrue rtNodeDisp rtBeamForce rtBeamDisp rtBeamStress stBeamPrincipal stBeamGlobal
     
     % error screen null output index
     if isempty(self.outputid)
@@ -29,9 +29,9 @@ function runLSA(self,uID)
     
 %% Unique result file logic wrapper here    
     % check if unique result name in path
-    self.isuniquefile    
+     newfile = self.isunique;    
     % if result file does not already exist
-    if self.unique
+    if newfile
         % update user
         fprintf('\tRunning Linear Static Analysis... \n');
 
@@ -48,13 +48,18 @@ function runLSA(self,uID)
         end
 
         % Assign moment -- ADD ME PLEASE --
+        % negative, this functionality should be part of a "node" object
+        % method
 
 
         % enable all load cases in lsa object
         [lc,ind] = unique(self.inputcase);
 
         for ii = 1:length(lc);
-            if min(size(self.fcase))==1
+            if isempty(self.fcase)
+                % default enable first freedom case
+                fc = 1;
+            elseif min(size(self.fcase))==1
                 % all fcases enabled for each load case
                 fc = self.fcase;
             else
@@ -75,8 +80,12 @@ function runLSA(self,uID)
 
         % disable load case
         for ii = 1:length(lc);
-            iErr = calllib('St7API','St7DisableLSALoadCase',uID,lc(ii),...
-                self.fcase(ind));
+            if isempty(self.fcase)
+                iErr = calllib('St7API','St7DisableLSALoadCase',uID,lc(ii),1);
+            else
+                iErr = calllib('St7API','St7DisableLSALoadCase',uID,lc(ii),...
+                    self.fcase(ind));
+            end
             HandleError(iErr);
         end
     end %% End Logic wrapper here
@@ -88,15 +97,47 @@ function runLSA(self,uID)
         [iErr, nPrimary, nSecondary] = calllib('St7API', 'St7OpenResultFile',...
             uID, self.fullname, '', false, 0, 0);
         HandleError(iErr);
+        
+        if iscell(self.outputtype); types = self.outputtype; ids = self.outputid; num_types = length(self.outputtype);
+        else num_types = 1; types = {self.outputtype}; ids = {self.outputid}; end
+        
+        for jj = 1:num_types
+            % nodal results
+            if ~isempty(regexp(types{jj}, regexptranslate('wildcard','nod*'),'Once'))
+                % Gather Results
+                self.resp{jj} = zeros(length(ids{jj}),6);
 
-        % Gather Results
-        self.resp = zeros(length(self.outputid),6);
-
-        % loop response index for requested results
-        for ii = 1:size(self.resp,1)
-            [iErr,self.resp(ii,:)] = calllib('St7API','St7GetNodeResult',uID,...
-                rtNodeDisp,self.outputid(ii),self.outputcase(ii),[0 0 0 0 0 0]);
-            HandleError(iErr);
+                % loop response index for requested results
+                for ii = 1:size(self.resp{jj},1)
+                    [iErr,self.resp{jj}(ii,:)] = calllib('St7API','St7GetNodeResult',uID,...
+                        rtNodeDisp,ids{jj}(ii),self.outputcase(ii),[0 0 0 0 0 0]);
+                    HandleError(iErr);
+                end
+            elseif ~isempty(regexp(types{jj}, regexptranslate('wildcard','beam*'),'Once'))
+                subtype = stBeamPrincipal;
+                switch types{jj}                    
+                case {'beam','beam_force'}
+                    rtype = rtBeamForce;     
+                    numCol = 6;
+                    self.resp{jj} = zeros(length(ids{jj}),2*numCol,length(self.outputcase{jj}));                    
+                case 'beam_stress'
+                    rtype = rtBeamStress;
+                    numCol = 18;
+                    self.resp{jj} = zeros(length(ids{jj}),2*numCol,length(self.outputcase{jj}));  
+                case 'beam_disp'
+                    numCol = 6;
+                    rtype = rtBeamDisp;
+                    self.resp{jj} = zeros(length(ids{jj}),2*numCol,length(self.outputcase{jj}));
+                end 
+                % loop response index for requested results
+                for ii = 1:length(self.outputcase{jj})
+                    for kk = 1:length(ids{jj})
+                        [iErr, numCol, self.resp{jj}(kk,:,ii)] = calllib('St7API', 'St7GetBeamResultEndPos',...
+                            uID, rtype, subtype, ids{jj}(kk), self.outputcase{jj}(ii), numCol, zeros(2*numCol,1));
+                        HandleError(iErr);
+                    end
+                end
+            end
         end
 
         % clean up

@@ -28,6 +28,11 @@ for ii = 1:length(model)
             mat = prop.getPlateMaterial(uID);
             %populate empty material property fields
             prop = fillempty(prop, mat);
+        elseif any(strcmp(Para.name,{'ambient'; 'conv_coeff'; 'rad_coeff'; 'conv_ambient'; 'rad_ambient'}))
+            % get plate heat attributes
+            heat = prop.getPlateHeat(uID,1);
+            % populate empty heat fields
+            prop = fillempty(prop, heat);
         else
             % get plate thickness
             thick = prop.getPlateThickness(uID);

@@ -134,6 +134,8 @@ function results = main(uID,model)
         plate = model.deckt;
         % set new material properties
         plate.setPlateThickness(uID)
+        % plate offset to maintain zero clearance between deck and girder
+        plate.setPlateOffset(uID)
         % save reults to results structure
         results.deckt = plate;
     end

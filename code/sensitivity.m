@@ -14,10 +14,14 @@ if ~isfield(model, 'options') || ~isfield(model.options,'populate');
         getModelProp(uID,model.params);
     end
 
-	% Set new model properties
-	setModelProp(uID,model.params)
-    % run solvers
-    solver(uID,model.solvers)
+    if isfield(model,'params')
+        % Set new model properties
+        setModelProp(uID,model.params)
+    end
+    if isfield(model,'solvers')
+        % run solvers
+        solver(uID,model.solvers)
+    end
 	
 	
 	

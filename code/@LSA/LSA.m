@@ -10,6 +10,7 @@ classdef LSA < file
 	properties
         inputid % nodeid to apply load
         inputcase % input loadcase id
+        outputtype % element type from which to pull results ('beam' or 'node')
         outputid % nodeid to return results
         outputcase % output loadcase id
         force % [nnodes x (x y z]] force

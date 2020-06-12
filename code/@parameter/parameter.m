@@ -15,6 +15,7 @@ classdef parameter < handle
         starta % starting alpha value for optimization
         obj % instance of class containing all model info for parameter
         scale % string, 'lin' or 'log'
+        value % the intended value for the parameter
 	end
 
 %% dependent properties
@@ -34,6 +35,20 @@ classdef parameter < handle
 		end
 
 	%% dependent methods
+    % make a clone of instance
+    function new = clone(self)
+        new = feval(class(self));
+
+        p = properties(self);
+        info = metaclass(self);
+
+        for ii = 1:length(p)
+            if ~info.PropertyList(ii).Dependent
+                new.(p{ii}) = self.(p{ii});
+            end
+        end
+    end
+        
     function ub = get.ub(self)
         if isempty(self.scale) || strcmp(self.scale,'lin')
             ub = self.uba*self.base;

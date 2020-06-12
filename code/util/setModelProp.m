@@ -27,6 +27,12 @@ for ii = 1:length(model)
         if any(strcmp(Para.name,matprop))
             % set new material properties
             prop.setPlateMaterial(uID)
+        elseif strcmp(Para.name,'offset')
+            % set new plate offset
+            prop.setPlateOffset(uID)
+        elseif any(strcmp(Para.name,{'ambient'; 'conv_coeff'; 'rad_coeff'; 'conv_ambient'; 'rad_ambient'}))
+            % set plate heat attributes
+            prop.setPlateHeat(uID,1);
         else
             % set new plate thickness
             prop.setPlateThickness(uID)
