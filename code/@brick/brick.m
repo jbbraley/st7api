@@ -1,21 +1,19 @@
-classdef plate < material & section & st7prop
-%% classdef plate
+classdef brick < material & st7prop
+%% classdef brick
 % 
 % 
 % 
-% author: 
-% create date: 15-Aug-2016 18:57:07
+% author: John Braley
+% create date: 12-Jun-2020 12:24:25
+% classy version: 0.1.2
 
 %% object properties
 	properties
-        t % thickness
         offset % vertical offset in inches
         propNum % St7 property number
         id % St7 element ID
         propName % St7 property name
-        plane   % string describing the resident plane (e.g. 'XY')
-        layer   % elevation coordinate of plate
-        side % 'positive' or 'negative' sides of plate to apply or obtain attributes
+        face % st7 face number to which attributes should be obtained or applied
         conv_coeff % for heat analyses
         rad_coeff % for heat analyses
         conv_ambient % temperature for heat analyses
@@ -31,23 +29,26 @@ classdef plate < material & section & st7prop
 	properties (Access = private)
 	end
 
-%% dynamic methods
+%% constructor
 	methods
-	%% constructor
-		function self = plate()
+		function self = brick()
 		end
-
-	%% dependent methods
-
 	end
+
+%% ordinary methods
+	methods 
+	end % /ordinary
+
+%% dependent methods
+	methods 
+	end % /dependent
 
 %% static methods
 	methods (Static)
-        
-	end
+	end % /static
 
 %% protected methods
 	methods (Access = protected)
-	end
+	end % /protected
 
 end

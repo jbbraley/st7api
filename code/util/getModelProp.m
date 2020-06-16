@@ -28,9 +28,9 @@ for ii = 1:length(model)
             mat = prop.getPlateMaterial(uID);
             %populate empty material property fields
             prop = fillempty(prop, mat);
-        elseif any(strcmp(Para.name,{'ambient'; 'conv_coeff'; 'rad_coeff'; 'conv_ambient'; 'rad_ambient'}))
+        elseif any(strcmp(Para.name,{'ambient'; 'heat'; 'conv_coeff'; 'rad_coeff'; 'conv_ambient'; 'rad_ambient'}))
             % get plate heat attributes
-            heat = prop.getPlateHeat(uID,1);
+            heat = prop.getPlateHeat(uID,1,prop.side,prop.heat_type);
             % populate empty heat fields
             prop = fillempty(prop, heat);
         else
@@ -40,7 +40,21 @@ for ii = 1:length(model)
             prop = fillempty(prop, thick);
         end
     end
-
+% Operate on st7 brick elements
+    if isa(prop,'brick')
+        if any(strcmp(Para.name,{'ambient'; 'heat'; 'conv_coeff'; 'rad_coeff'; 'conv_ambient'; 'rad_ambient'}))
+            % get brick heat attributes
+            heat = prop.getBrickHeat(uID,1,prop.face,prop.heat_type);
+            % populate empty heat fields
+            prop = fillempty(prop, heat);
+        % Alter brick material
+%         elseif any(strcmp(Para.name,matprop))
+%             % call get brick material fcn
+%             mat = prop.getBrickMaterial(uID);
+%             %populate empty material property fields
+%             prop = fillempty(prop, mat);
+       end
+    end
     % Operate on st7 beam elements
     if isa(prop,'beam')
         % Alter material property

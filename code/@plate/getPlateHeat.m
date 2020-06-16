@@ -1,40 +1,63 @@
-function [heat] = getPlateThickness(self,uID,LCase)
+function [heat] = getPlateHeat(self,uID,LCase,side,type)
 %% getPlateThickness
 % 
-% 
+% side - 'positive' or 'negative'
 % 
 % author: John Braley
 % create date: 09-Nov-2016 12:44:09
-global psPlateZPlus	
+global psPlateZPlus	psPlateZMinus
 % Handle zero entry
 if nargin<2; uID = 1; end
+if nargin<3; LCase = 1; end
+if nargin<4 || isempty(side); side = {'positive','negative'}; end
+if ~iscell(side); side = {side}; end
+if nargin<5 || isempty(type); type = {'convection';'radiation'}; end
 
-%preallocate
-heat.conv_coeff = zeros(length(self.plateID),1);
-heat.conv_ambient = conv_coeff;
-heat.rad_coeff = conv_coeff;
-heat.rad_ambient = conv_coeff;
-    
-for ii = 1:length(self.plateID)
-    % Intitialize st7 output
-    cresults = zeros(1,2);
-    rresults = zeros(1,2);
+if any(strcmp(type,'convection')) || any(strcmp(type,'conv'))
+    heat.conv_coeff = zeros(length(self.plateID),length(side));
+    heat.conv_ambient = heat.conv_coeff;
+    for jj = 1:length(side)       
+        switch side{jj}
+        case {'positive'; 'pos'; '+'; 'plus'}
+            plate_face = psPlateZPlus;
+        case {'negative'; 'neg'; '-'; 'minus'}
+            plate_face = psPlateZMinus;
+        end
 
-    % get plate convection coefficients
-    [iErr, cresults] = calllib('St7API','St7GetPlateFaceConvection2',uID,self.plateID(ii),LCase,...
-    psPlateZPlus,cresults);
-    HandleError(iErr)	
-    
-    % get plate convection coefficients
-    [iErr, rresults] = calllib('St7API','St7GetPlateFaceRadiation2',uID,self.plateID(ii),LCase,...
-    psPlateZPlus,rresults);
-    HandleError(iErr)
-    
-    heat.conv_coeff(ii) = cresults(1);
-    heat.conv_ambient(ii) = cresults(2);
-    heat.rad_coeff(ii) = rresults(1);
-    heat.rad_ambient(ii) = rresults(2);
+        for ii = 1:length(self.plateID)
+            % Intitialize st7 output
+            cresults = zeros(1,2);      
+            % get plate convection coefficients
+            [iErr, cresults] = calllib('St7API','St7GetPlateFaceConvection2',uID,self.plateID(ii),LCase,...
+            plate_face,cresults);
+            HandleError(iErr)	
+            heat.conv_coeff(ii,jj) = cresults(1);
+            heat.conv_ambient(ii,jj) = cresults(2);
+        end
+    end
 end
-	
+
+if any(strcmp(type,'radiation')) || any(strcmp(type,'rad'))
+    heat.rad_coeff = zeros(length(self.plateID),length(side));
+    heat.rad_ambient = heat.rad_coeff;
+    for jj = 1:length(side)       
+        switch side{jj}
+        case {'positive'; 'pos'; '+'; 'plus'}
+            plate_face = psPlateZPlus;
+        case {'negative'; 'neg'; '-'; 'minus'}
+            plate_face = psPlateZMinus;
+        end
+        for ii = 1:length(self.plateID)
+            rresults = zeros(1,2);
+            % get plate radiation coefficients
+            [iErr, rresults] = calllib('St7API','St7GetPlateFaceRadiation2',uID,self.plateID(ii),LCase,...
+            plate_face,rresults);
+            HandleError(iErr)
+            heat.rad_coeff(ii,jj) = rresults(1);
+            heat.rad_ambient(ii,jj) = rresults(2);
+        end
+    end
+end
+
 	
 end

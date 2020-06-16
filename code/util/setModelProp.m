@@ -30,15 +30,32 @@ for ii = 1:length(model)
         elseif strcmp(Para.name,'offset')
             % set new plate offset
             prop.setPlateOffset(uID)
-        elseif any(strcmp(Para.name,{'ambient'; 'conv_coeff'; 'rad_coeff'; 'conv_ambient'; 'rad_ambient'}))
+        elseif any(strcmp(Para.name,{'ambient'; 'heat'; 'conv_coeff'; 'rad_coeff'; 'conv_ambient'; 'rad_ambient'; 'convection'; 'radiation'}))
             % set plate heat attributes
-            prop.setPlateHeat(uID,1);
+            prop.setPlateHeat(uID,1,prop.side);
         else
             % set new plate thickness
             prop.setPlateThickness(uID)
         end
     end
-
+% Operate on st7 brick elements
+    if isa(prop,'brick')    
+        % set brick heat attributes
+        if any(strcmp(Para.name,{'ambient'; 'heat'; 'conv_coeff'; 'rad_coeff'; 'conv_ambient'; 'rad_ambient'; 'convection'; 'radiation'}))
+            prop.setBrickHeat(uID,1,prop.face);
+%         % Alter brick material
+%         elseif any(strcmp(Para.name,matprop))
+%             % set new material properties
+%             prop.setBrickMaterial(uID)
+%         elseif strcmp(Para.name,'offset')
+%             % set new brick offset
+%             prop.setBrickOffset(uID)
+%         
+%         else
+%             % set new brick thickness
+%             prop.setBrickThickness(uID)
+        end
+    end
     % Operate on st7 beam elements
     if isa(prop,'beam')
         if any(strcmp(Para.name,matprop))

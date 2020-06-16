@@ -27,11 +27,13 @@ function apish(main,sys,model,opts,objectName)
         uID = sys.uID;
         apiInit(uID,sys); 
         % main fcn
-        if isa(model,'cell')
-            main(uID,model);
-        else
-            for ii = 1:length(model)
-                main(uID,model(ii));
+        if ~isempty(main)
+            if isa(model,'cell')
+                main(uID,model);
+            else
+                for ii = 1:length(model)
+                    main(uID,model(ii));
+                end
             end
         end
         
