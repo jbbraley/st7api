@@ -1,4 +1,4 @@
-classdef plate < material & section & st7prop
+classdef plate < material & st7prop
 %% classdef plate
 % 
 % 
@@ -9,18 +9,10 @@ classdef plate < material & section & st7prop
 %% object properties
 	properties
         t % thickness
-        offset % vertical offset in inches
-        propNum % St7 property number
-        id % St7 element ID
-        propName % St7 property name
         plane   % string describing the resident plane (e.g. 'XY')
         layer   % elevation coordinate of plate
         side % 'positive' or 'negative' sides of plate to apply or obtain attributes
-        conv_coeff % for heat analyses
-        rad_coeff % for heat analyses
-        conv_ambient % temperature for heat analyses
-        rad_ambient
-        heat_type % 'radiation', 'convection' or both
+
 	end
 
 %% dependent properties

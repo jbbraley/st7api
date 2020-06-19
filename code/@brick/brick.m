@@ -1,4 +1,4 @@
-classdef brick < material & st7prop
+classdef brick < material & st7element
 %% classdef brick
 % 
 % 
@@ -9,16 +9,7 @@ classdef brick < material & st7prop
 
 %% object properties
 	properties
-        offset % vertical offset in inches
-        propNum % St7 property number
-        id % St7 element ID
-        propName % St7 property name
         face % st7 face number to which attributes should be obtained or applied
-        conv_coeff % for heat analyses
-        rad_coeff % for heat analyses
-        conv_ambient % temperature for heat analyses
-        rad_ambient
-        heat_type % 'radiation', 'convection' or both
 	end
 
 %% dependent properties

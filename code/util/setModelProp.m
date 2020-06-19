@@ -107,5 +107,18 @@ for ii = 1:length(model)
         % set new section properties 
         prop.setConnection(uID)
     end
+    
+    % Operate on st7 table
+    if isa(prop,'st7table')
+        % check if table exists
+        [~, max_id] = prop.getExisting(uID);
+        if prop.id>max_id
+            % create new table
+            prop.create(uID);
+        else
+            % set data in table
+            prop.setData(uID)
+        end
+    end
 end
 end

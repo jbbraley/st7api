@@ -24,5 +24,12 @@ function solver(uID,solvers)
             % call lsa solver
             lsa.runLSA(uID)
         end
+        
+        %% THA - transient heat analysis
+        if isa(solver,'THA') && solver.run == 1
+            tha = solver;
+            % call tha solver
+            tha.runTHA(uID)
+        end
     end
 end

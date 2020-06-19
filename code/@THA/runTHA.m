@@ -49,9 +49,10 @@ function runTHA(self,uID)
                 self.LDcase(ii));
                 HandleError(iErr);
             end
+        end
             iErr = calllib('St7API','St7SetSolverHeatNonlinear',uID,btTrue);
             HandleError(iErr);
-            
+        if ~isempty(self.steps)
             for ii = size(self.steps,1)
                 row = ii;
                 iErr = calllib('St7API','St7SetTimeStepData',uID,row,self.steps(row,1),1,self.steps(row,2));
@@ -69,30 +70,39 @@ function runTHA(self,uID)
 % End Logic wrapper here
     
 %% Open result file
-    if ~isempty(self.steps)
-        % open results
-        [iErr, nPrimary, nSecondary] = calllib('St7API', 'St7OpenResultFile',...
-            uID, self.fullname, '', false, 0, 0);
-        HandleError(iErr);
-        
-        if iscell(self.outputtype); types = self.outputtype; ids = self.outputid; num_types = length(self.outputtype);
-        else num_types = 1; types = {self.outputtype}; ids = {self.outputid}; end
-        
-        for jj = 1:num_types
-            % nodal results
-            if ~isempty(regexp(types{jj}, regexptranslate('wildcard','nod*'),'Once'))
-                % Gather Results
-                self.resp{jj} = zeros(length(ids{jj}),1);
+% open results
+[iErr, nPrimary, nSecondary] = calllib('St7API', 'St7OpenResultFile',...
+    uID, self.fullname, '', false, 0, 0);
+HandleError(iErr);
 
-                % loop response index for requested results
-                for ii = 1:size(self.resp{jj},1)
-                    [iErr,self.resp{jj}(ii,:)] = calllib('St7API','St7GetNodeResult',uID,...
-                        rtNodeTemp,ids{jj}(ii),ii,[0]);
-                    HandleError(iErr);
-                end
-            elseif ~isempty(regexp(types{jj}, regexptranslate('wildcard','plate*'),'Once'))
-                
-            elseif ~isempty(regexp(types{jj}, regexptranslate('wildcard','brick*'),'Once'))
+% get number of result cases/ time steps
+[iErr, numRows] = calllib('St7API','St7GetNumTimeStepRows',uID,0);
+HandleError(iErr);
+
+for rows = 1:numRows   
+    [iErr, numSteps(rows),save_int(rows), t_step(rows)] = calllib('St7API','St7GetTimeStepData',uID,rows,0,0,0);        
+    HandleError(iErr);
+end
+numCases = sum(numSteps);
+if iscell(self.outputtype); types = self.outputtype; ids = self.outputid; num_types = length(self.outputtype);
+else num_types = 1; types = {self.outputtype}; ids = {self.outputid}; end
+
+for jj = 1:num_types
+    % nodal results
+    if ~isempty(regexp(types{jj}, regexptranslate('wildcard','nod*'),'Once'))
+        % Gather Results
+        self.resp{jj} = zeros(size(ids{jj},1),numCases);
+        for kk = 1:numCases
+            % loop response index for requested results
+            for ii = 1:size(self.resp{jj},1)
+                [iErr,self.resp{jj}(ii,kk)] = calllib('St7API','St7GetNodeResult',uID,...
+                    rtNodeTemp,ids{jj}(ii),kk,0);
+                HandleError(iErr);
+            end
+        end
+    elseif ~isempty(regexp(types{jj}, regexptranslate('wildcard','plate*'),'Once'))
+
+    elseif ~isempty(regexp(types{jj}, regexptranslate('wildcard','brick*'),'Once'))
 %             elseif ~isempty(regexp(types{jj}, regexptranslate('wildcard','beam*'),'Once'))
 %                 subtype = stBeamPrincipal;
 %                 switch types{jj}                    
@@ -117,14 +127,13 @@ function runTHA(self,uID)
 %                         HandleError(iErr);
 %                     end
 %                 end
-            end
-        end
-
-        % clean up
-        iErr = calllib('St7API','St7CloseResultFile',uID);
-        HandleError(iErr);
     end
+end
+
+% clean up
+iErr = calllib('St7API','St7CloseResultFile',uID);
+HandleError(iErr);    
     
-    % update user
-    fprintf('Done. ');
+% update user
+fprintf('Done. ');
 end
